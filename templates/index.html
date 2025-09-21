@@ -1,0 +1,235 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Laptop Price Prediction</title>
+    <style>
+        h1 {
+            text-align: center;
+            color: #333;
+            margin-bottom: 30px;
+        }
+        .c1 {
+            height: max-content;
+            width: 50vh;
+            padding: 25px;
+            border: 2px solid burlywood;
+            border-radius: 10px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            margin: auto;
+            background-color: #fff;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        }
+        .c2 {
+            display: flex;
+            justify-content: center;
+            gap: 15px;
+            margin-top: 20px;
+        }
+        input, select {
+            border: 1px solid #ddd;
+            padding: 10px;
+            margin: 8px 0;
+            width: 100%;
+            box-sizing: border-box;
+            border-radius: 4px;
+            font-size: 16px;
+        }
+        input:focus, select:focus {
+            outline: none;
+            border-color: #4CAF50;
+            box-shadow: 0 0 5px rgba(76, 175, 80, 0.3);
+        }
+        form {
+            display: flex;
+            flex-direction: column;
+            width: 100%;
+        }
+        label {
+            margin-top: 12px;
+            font-weight: bold;
+            color: #555;
+        }
+        button {
+            padding: 12px 20px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            flex: 1;
+            font-weight: bold;
+            font-size: 16px;
+            transition: all 0.3s ease;
+        }
+        button[type="submit"] {
+            background-color: #4CAF50;
+            color: white;
+        }
+        button[type="reset"] {
+            background-color: #f44336;
+            color: white;
+        }
+        button:hover {
+            opacity: 0.9;
+            transform: translateY(-2px);
+        }
+        #prediction-result {
+            margin-top: 20px;
+            padding: 15px;
+            border-radius: 5px;
+            text-align: center;
+            font-weight: bold;
+            display: none;
+        }
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+            margin: 0;
+            padding: 20px;
+            min-height: 100vh;
+        }
+        .success {
+            background-color: #e8f7ef;
+            color: #27ae60;
+            border: 1px solid #27ae60;
+        }
+        .error {
+            background-color: #ffecec;
+            color: #e74c3c;
+            border: 1px solid #e74c3c;
+        }
+        .info {
+            background-color: #e8f4fc;
+            color: #3498db;
+            border: 1px solid #3498db;
+        }
+    </style>
+</head>
+<body>
+    <h1>Laptop Price Prediction</h1>
+    <div class="c1">
+        <form id="prediction-form">
+            <label for="ramsize">Enter RAM size (in GB)</label>
+            <input type="number" id="ramsize" name="ramsize" placeholder="in GB" min="4" max="64" required>
+
+            <label for="storagesize">Enter Storage size (in GB)</label>
+            <input type="number" id="storagesize" name="storagesize" placeholder="in GB" min="128" max="2048" required>
+
+            <label for="processor">Enter Processor Speed</label>
+            <input type="number" id="processor" name="processor" step="0.1" placeholder="in GHz" min="1.0" max="5.0" required>
+
+            <label for="screensize">Enter Screen Size</label>
+            <input type="number" id="screensize" name="screensize" step="0.1" placeholder="in inch" min="11" max="18" required>
+
+            <label for="brand">Select brand</label>
+            <select name="brand" id="brand" required>
+                <option value="asus">Asus</option>
+                <option value="acer">Acer</option>
+                <option value="dell">Dell</option>
+                <option value="hp">HP</option>
+                <option value="lenovo">Lenovo</option>
+            </select>
+
+            <div class="c2">
+                <button type="submit">Predict</button>
+                <button type="reset" id="reset-btn">Reset</button>
+            </div>
+
+            <div id="prediction-result"></div>
+        </form>
+    </div>
+
+    <script>
+        document.getElementById('prediction-form').addEventListener('submit', async function(e) {
+            e.preventDefault();
+
+            // Get form values
+            const ramSize = document.getElementById('ramsize').value;
+            const storageSize = document.getElementById('storagesize').value;
+            const processorSpeed = document.getElementById('processor').value;
+            const screenSize = document.getElementById('screensize').value;
+            const brand = document.getElementById('brand').value;
+
+            // Simple validation
+            if (!ramSize || !storageSize || !processorSpeed || !screenSize || !brand) {
+                showResult('Please fill in all fields', 'error');
+                return;
+            }
+
+            // Show processing message
+            showResult('Processing your request...', 'info');
+
+            try {
+                // In a real implementation, you would call your ML model API here
+                // For demonstration, we'll simulate a response
+                const response = await getModelPrediction(ramSize, storageSize, processorSpeed, screenSize, brand);
+
+                // Convert RUB to INR (using a fixed exchange rate for demonstration)
+                // In a real implementation, you would fetch the current exchange rate
+                const exchangeRate = 1.1; // 1 RUB = 1.1 INR (example rate)
+                const priceInINR = response.predictedPrice * exchangeRate;
+
+                const formattedPrice = new Intl.NumberFormat('en-IN', {
+                    style: 'currency',
+                    currency: 'INR',
+                    maximumFractionDigits: 0
+                }).format(priceInINR);
+
+                showResult(`Predicted Laptop Price: ${formattedPrice}`, 'success');
+            } catch (error) {
+                showResult('Error predicting price. Please try again.', 'error');
+                console.error('Prediction error:', error);
+            }
+        });
+
+        // Reset button functionality
+        document.getElementById('reset-btn').addEventListener('click', function() {
+            // Clear the prediction result
+            const resultDiv = document.getElementById('prediction-result');
+            resultDiv.style.display = 'none';
+            resultDiv.textContent = '';
+
+            // Reset form values
+            document.getElementById('prediction-form').reset();
+        });
+
+        async function getModelPrediction(ram, storage, processor, screen, brand) {
+    try {
+        const response = await fetch("http://127.0.0.1:5000/predict", {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json"
+            },
+            body: JSON.stringify({
+                ramsize: ram,
+                storagesize: storage,
+                processor: processor,
+                screensize: screen,
+                brand: brand
+            })
+        });
+
+        const data = await response.json();
+        if (data.error) {
+            throw new Error(data.error);
+        }
+        return { predictedPrice: data.prediction };
+
+    } catch (error) {
+        console.error("API error:", error);
+        return { predictedPrice: "Error" };
+    }
+}
+
+
+        function showResult(message, type) {
+            const resultDiv = document.getElementById('prediction-result');
+            resultDiv.textContent = message;
+            resultDiv.className = type;
+            resultDiv.style.display = 'block';
+        }
+    </script>
+</body>
+</html>
